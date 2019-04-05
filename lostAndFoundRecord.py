@@ -178,25 +178,66 @@ def deleteLostFoundRecord():
     pro_debug = '尝试执行deleteLostFoundRecord'
     logger.info(pro_debug)
 
-    ret = db_exec(sql)
-    if ret:
-        res_debug = '执行成功'
-        logger.info(res_debug)
+    pro_debug = '尝试寻找是否存在要删除的记录'
+    logger.info(pro_debug)
+    sql_query = "SELECT DISTINCT IF(EXISTS(SELECT * FROM swuassistant WHERE id = %d),1,0) AS res FROM swuassistant" % (int(id))
+    #print(sql_query)
 
-        data = {}
-        data['status'] = 200
-        data['message'] = 'Success'
-        data['data'] = None
-        return json.dumps(data)
-    else:
-        res_debug = '执行失败'
-        logger.info(res_debug)
+    cursor = db.cursor()
+    try:
+        db.ping(reconnect=True)
+        cursor.execute(sql_query)
 
-        data = {}
-        data['status'] = 500
-        data['message'] = 'Error'
-        data['data'] = None
-        return json.dumps(data)
+        #print(sql_query)
+        if cursor:
+            res = cursor.fetchall()
+            #print(res)
+            if res[0][0] == 1:
+                res_debug = '结果存在 , 执行删除命令'
+                logger.info(res_debug)
+
+                cursor.execute(sql)
+                db.commit()
+                if cursor:
+                    res_debug = '执行成功'
+                    logger.info(res_debug)
+
+                    response = {}
+                    response['status'] = 200
+                    response['message'] = 'Success'
+                    response['data'] = None
+                    return json.dumps(response)
+                else:
+                    res_debug = '执行失败'
+                    logger.info(res_debug)
+
+                    response = {}
+                    response['status'] = 500
+                    response['message'] = 'Error'
+                    response['data'] = None
+                    return json.dumps(response)
+            else:
+                res_debug = '结果不存在 ，返回'
+                logger.info(res_debug)
+
+                response = {}
+                response['status'] = 200
+                response['message'] = '所需删除记录不存在'
+                response['data'] = None
+                return json.dumps(response)
+        else:
+            res_debug2 = '查询失败'
+            logger.info(res_debug2)
+
+            response = {}
+            response['status'] = 500
+            response['message'] = 'Error'
+            response['data'] = None
+            return json.dumps(response)
+    except:
+        db.rollback()
+    finally:
+        db.close()
 
 if __name__ == '__main__':
     app.run()
