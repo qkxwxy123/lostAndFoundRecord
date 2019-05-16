@@ -121,7 +121,7 @@ def addLostFoundRecord():
             response['status'] = 200
             response['message'] = 'Success'
             response['id'] = results[0][0]
-            return json.dumps(response)
+            return json.dumps(response , ensure_ascii=False)
         except:
             db.rollback()
         finally:
@@ -133,7 +133,7 @@ def addLostFoundRecord():
         response['status'] = 500
         response['message'] = 'Fail'
         response['id'] = None
-        return json.dumps(response)
+        return json.dumps(response , ensure_ascii=False)
 
 @app.route('/queryLostFoundRecord' , methods = ["GET"])
 def queryLostFoundRecord():
@@ -153,7 +153,7 @@ def queryLostFoundRecord():
     logger.info(pageNo_debug)
 
     if not isinstance(phoneNumber , str):  #未读到可选项phoneNumber
-        sql = "select * from swuassistant limit %d,%d " % (int(pageSize) * (int(pageNo) - 1) , int(pageSize))
+        sql = "select * from swuassistant order by created_time desc limit %d,%d " % (int(pageSize) * (int(pageNo) - 1) , int(pageSize))
 
         sql_debug = '传入sql :' + sql
         logger.info(sql_debug)
@@ -161,9 +161,10 @@ def queryLostFoundRecord():
         logger.info(pro_debug)
 
         response = query_function(sql , pageSize , pageNo)
-        return json.dumps(response)
+        return json.dumps(response , ensure_ascii=False)
     else:                                   #读到可选项phoneNumber
-        sql = "select * from swuassistant where phoneNumber = '%s' limit %d , %d " %(str(phoneNumber) , int(pageSize) * (int(pageNo) - 1) , int(pageSize))
+        sql = "select * from swuassistant where phoneNumber = '%s' order by created_time desc limit %d , %d " \
+              %(str(phoneNumber) , int(pageSize) * (int(pageNo) - 1) , int(pageSize))
 
         sql_debug = '传入sql :' + sql
         logger.info(sql_debug)
@@ -171,7 +172,7 @@ def queryLostFoundRecord():
         logger.info(pro_debug)
 
         response = query_function(sql , pageSize , pageNo)
-        return json.dumps(response)
+        return json.dumps(response , ensure_ascii=False)
 
 @app.route('/deleteLostFoundRecord' , methods = ["POST"])
 def deleteLostFoundRecord():
@@ -215,7 +216,7 @@ def deleteLostFoundRecord():
                     response['status'] = 200
                     response['message'] = 'Success'
                     response['data'] = None
-                    return json.dumps(response)
+                    return json.dumps(response , ensure_ascii=False)
                 else:
                     res_debug = '执行失败'
                     logger.info(res_debug)
@@ -224,7 +225,7 @@ def deleteLostFoundRecord():
                     response['status'] = 500
                     response['message'] = 'Error'
                     response['data'] = None
-                    return json.dumps(response)
+                    return json.dumps(response , ensure_ascii=False)
             else:
                 res_debug = '结果不存在 ，返回'
                 logger.info(res_debug)
@@ -233,7 +234,7 @@ def deleteLostFoundRecord():
                 response['status'] = 200
                 response['message'] = 'Fail to delete,the record do not exist.'
                 response['data'] = None
-                return json.dumps(response)
+                return json.dumps(response , ensure_ascii=False)
         else:
             res_debug2 = '查询失败'
             logger.info(res_debug2)
@@ -242,7 +243,7 @@ def deleteLostFoundRecord():
             response['status'] = 500
             response['message'] = 'Error'
             response['data'] = None
-            return json.dumps(response)
+            return json.dumps(response , ensure_ascii=False)
     except:
         db.rollback()
     finally:
